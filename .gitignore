@@ -138,4 +138,4 @@ temp*
 *.pt
 *.pth
 *.zip
-*log*
+lightning_logs/
