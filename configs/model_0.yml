@@ -1,0 +1,65 @@
+---
+# Model
+MODEL: 
+  type: 'SimpleModel'
+  cfg:
+    in_channels: 4
+    activation: 'SiLU'
+# Trainer
+TRAINER_CFG:
+  logger: True
+  enable_checkpointing: True
+  # callbacks: Optional[Union[List[Callback], Callback]] = None
+  enable_progress_bar: True
+  check_val_every_n_epoch: 1
+  accumulate_grad_batches: 16
+  max_epochs: 64
+  log_every_n_steps: 50
+  accelerator: "auto"
+  enable_model_summary: True
+  resume_from_checkpoint: False
+  detect_anomaly: True
+  amp_backend: "native"
+  stochastic_weight_avg: False
+  terminate_on_nan: True
+
+# Data
+DATA_DIR: 'data/proc_data'
+USE_BANDS: ['Optical_Depth_047', 'Optical_Depth_055']
+TRAIN_DATALOADER_CFG:
+  batch_size: 32
+  shuffle: True
+  num_workers: 1
+VAL_DATALOADER_CFG:
+  batch_size: 32
+  shuffle: False
+  num_workers: 1
+TRAIN_TRANSFORMS:
+  Resize:
+    height: 32
+    width: 32
+    p: 1.0
+  Normalize:
+    mean: 0.
+    std: 0.01
+    max_pixel_value: 65535.
+VAL_TRANSFORMS:
+  Resize:
+    height: 32
+    width: 32
+    p: 1.0
+  Normalize:
+    mean: 0.
+    std: 0.01
+    max_pixel_value: 65535.
+
+OPTIMIZER_CFG: 
+  type: 'Adam' # Should be one of the algorithms in https://pytorch.org/docs/stable/optim.html
+  lr: 5.0e-4
+
+LOSS_CFG:
+  type: 'PMLoss'
+
+# TODO:
+# LR_Scheduler
+# Callbacks
