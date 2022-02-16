@@ -1,2 +1,2 @@
 # NASA_Airathon
-![nasa-airathon-banner](assets/banner.jpeg)
+![nasa-airathon-banner](assets/banner.jpg)
