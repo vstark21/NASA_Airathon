@@ -1,0 +1,17 @@
+---
+OUTPUT_PATH: 'logs/'
+TRAIN_METAFILE: 'data/train_labels.csv'
+TEST_METAFILE: 'submission/submission_0.csv'
+TRAIN_DIR: 'data/proc_data_old/'
+TEST_DIR: 'data/proc_test_data_old/'
+N_FOLDS: 5
+XGB_PARAMS:
+  learning_rate: 0.008413060157425385
+  n_estimators: 2600
+  reg_lambda: 19
+  reg_alpha: 75
+  subsample: 0.5
+  colsample_bytree: 0.4
+  max_depth: 5
+  min_child_weight: 6
+  gamma: 0.2635842876184764
