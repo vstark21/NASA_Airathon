@@ -5,6 +5,9 @@ from collections import defaultdict
 from tqdm import tqdm
 from src.utils import check_existance
 from typing import Tuple
+import datetime
+
+META_COLUMNS = ['filename']
 
 def _load_features(path_dir: str, total: int) -> pd.DataFrame:
     """
@@ -17,14 +20,21 @@ def _load_features(path_dir: str, total: int) -> pd.DataFrame:
             continue
         data = np.load(filename)
         for key in data.keys():
+            if key == 'filename':
+                continue
             if key == 'label':
-                features[key].append(data[key])
+                if data[key] >= 0 or data[key] < 0:
+                    features[key].append(data[key])
+                else:
+                    features[key].append(np.nan)
                 continue
             _band = data[key].ravel()
-            _band = _band[_band != 0]
-            mean, std = _band.mean(), _band.std()
+            _band = np.concatenate((
+                _band[_band >= 0], _band[_band < 0]
+            )) # removing nan values
+            mean, var = _band.mean(), _band.std() ** 2
             features[key + '_mean'].append(mean)
-            features[key + '_std'].append(std)
+            features[key + '_var'].append(var)
     return pd.DataFrame(features)
 
 def _impute(
@@ -51,15 +61,50 @@ def _impute(
 
     train_df = train_df.fillna(0)
     test_df = test_df.fillna(0)
-    train_df = train_df.drop(columns=['grid_id'])
-    test_df = test_df.drop(columns=['grid_id'])
 
     return train_df, test_df
 
+def _load_metadata(
+    train_df: pd.DataFrame, 
+    test_df: pd.DataFrame,
+    grid_df: pd.DataFrame,
+    train_metadata: pd.DataFrame,
+    test_metadata: pd.DataFrame,
+) -> pd.DataFrame:
+    grid_ids = grid_df['grid_id'].values
+    elevation_means = grid_df['elevation_mean'].values
+    elevation_vars = grid_df['elevation_var'].values
+
+    for i in range(len(grid_ids)):
+        indices = train_df[train_df['grid_id'] == grid_ids[i]].index
+        train_df.loc[indices, 'elevation_mean'] = elevation_means[i]
+        train_df.loc[indices, 'elevation_var'] = elevation_vars[i]
+
+        indices = test_df[test_df['grid_id'] == grid_ids[i]].index
+        test_df.loc[indices, 'elevation_mean'] = elevation_means[i]
+        test_df.loc[indices, 'elevation_var'] = elevation_vars[i]
+    
+    train_dts = train_metadata['datetime'].apply(
+        lambda x: datetime.datetime.strptime(x, '%Y-%m-%dT%H:%M:%SZ')
+    )
+    test_dts = test_metadata['datetime'].apply(
+        lambda x: datetime.datetime.strptime(x, '%Y-%m-%dT%H:%M:%SZ')
+    )
+
+    train_df['month'] = train_dts.apply(lambda x: x.month)
+    train_df['day'] = train_dts.apply(lambda x: x.day)
+    train_df['hour'] = train_dts.apply(lambda x: x.hour)
+
+    test_df['month'] = test_dts.apply(lambda x: x.month)
+    test_df['day'] = test_dts.apply(lambda x: x.day)
+    test_df['hour'] = test_dts.apply(lambda x: x.hour)
+    return train_df, test_df
+
 def make_dataset(
-    work_dir: str, train_dir: str, test_dir: str, train_metafile: str, test_metafile: str,
+    work_dir: str, train_dir: str, test_dir: str, 
+    train_metafile: str, test_metafile: str, grid_metafile: str,
     filename: str='features.csv.tmp'
-) -> None:
+) -> Tuple[str, str]:
     """
     Build features from data.
     """
@@ -79,6 +124,8 @@ def make_dataset(
     check_existance(train_metafile)
     test_metafile = os.path.join(work_dir, test_metafile)
     check_existance(test_metafile)
+    grid_metafile = os.path.join(work_dir, grid_metafile)
+    check_existance(grid_metafile)
 
     train_metadata = pd.read_csv(train_metafile)
     train_df = _load_features(train_dir, total=len(train_metadata))
@@ -86,11 +133,17 @@ def make_dataset(
     test_metadata = pd.read_csv(test_metafile)
     test_df = _load_features(test_dir, total=len(test_metadata))
 
+    grid_data = pd.read_csv(grid_metafile)
+
     train_df, test_df = _impute(train_df, test_df, train_metadata, test_metadata)
 
     train_metadata['mean_value'] = train_metadata.groupby('grid_id')['value'].transform('mean')
     train_df['mean_value'] = train_metadata['mean_value'].values
     test_df['mean_value'] = test_metadata['value'].values[:len(test_df)]
+
+    train_df, test_df = _load_metadata(train_df, test_df, grid_data, train_metadata, test_metadata)
+    train_df = train_df.drop(columns=['grid_id'])
+    test_df = test_df.drop(columns=['grid_id'])
 
     train_df.to_csv(tfilename, index=False)
     test_df.to_csv(tefilename, index=False)

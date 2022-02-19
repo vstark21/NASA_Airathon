@@ -43,7 +43,7 @@ if __name__ == '__main__':
     
     tfilename, tefilename = make_dataset(
         '', config.TRAIN_DIR, config.TEST_DIR, 
-        config.TRAIN_METAFILE, config.TEST_METAFILE
+        config.TRAIN_METAFILE, config.TEST_METAFILE, config.GRID_METAFILE
     )
     train_df = pd.read_csv(tfilename)
     test_df = pd.read_csv(tefilename)
@@ -55,6 +55,8 @@ if __name__ == '__main__':
     train_features = train_df.to_numpy()
     test_features = test_df.to_numpy()
 
+    logger.info(f"Using following features: {train_df.columns}")
+    logger.info(f"Found {len(train_features)} training instances")
     train_preds, test_preds, oof_preds, oof_labels, feat_importances = run_kfold(
         train_features, train_labels, test_features, config.N_FOLDS,
         XGBRegressor, config.XGB_PARAMS, config.OUTPUT_PATH, name='xgb'
@@ -75,5 +77,6 @@ if __name__ == '__main__':
     submission.head()
 
     plt.barh(train_df.columns, feat_importances)
+    plt.yticks(fontsize='xx-small')
     plt.savefig(os.path.join(config.OUTPUT_PATH, 'feature_importance.png'))
     plt.show()
