@@ -103,7 +103,7 @@ def _load_metadata(
 def make_dataset(
     work_dir: str, train_dir: str, test_dir: str, 
     train_metafile: str, test_metafile: str, grid_metafile: str,
-    filename: str='features.csv.tmp'
+    filename: str='features.csv'
 ) -> Tuple[str, str]:
     """
     Build features from data.
@@ -132,6 +132,9 @@ def make_dataset(
 
     test_metadata = pd.read_csv(test_metafile)
     test_df = _load_features(test_dir, total=len(test_metadata))
+
+    print(f"Train Nan values: \n{train_df.isna().sum()}")
+    print(f"Test Nan values: \n{test_df.isna().sum()}")
 
     grid_data = pd.read_csv(grid_metafile)
 
