@@ -18,9 +18,10 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 from collections import defaultdict
 
-from src.data import make_dataset
+from src.data import prepare_dataset
 from src.models import run_kfold
 from xgboost import XGBRegressor
+from catboost import CatBoostRegressor
 
 from src.utils import *
 from loguru import logger
@@ -41,13 +42,10 @@ if __name__ == '__main__':
     logger.add(os.path.join(config.OUTPUT_PATH, 'logs.log'))
     logger.info(f"Config:{str(config)}")
     
-    tfilename, tefilename = make_dataset(
-        '', config.TRAIN_DIR, config.TEST_DIR, 
+    train_df, test_df = prepare_dataset(
+        config.DATA_PRODUCTS,
         config.TRAIN_METAFILE, config.TEST_METAFILE, config.GRID_METAFILE
     )
-    train_df = pd.read_csv(tfilename)
-    test_df = pd.read_csv(tefilename)
-
     train_labels = train_df['label'].to_numpy()
     train_df = train_df.drop(['label'], axis=1)
     test_df = test_df.drop(['label'], axis=1)
@@ -57,9 +55,19 @@ if __name__ == '__main__':
 
     logger.info(f"Using following features: {train_df.columns}")
     logger.info(f"Found {len(train_features)} training instances")
+    if config.MODEL == 'xgboost':
+        model = XGBRegressor
+        model_params = config.XGB_PARAMS
+    elif config.MODEL == 'catboost':
+        model = CatBoostRegressor
+        model_params = config.CATB_PARAMS
+    else:
+        raise ValueError(f"Model {config.MODEL} not supported")
+
+    logger.info(f"Training {config.MODEL} model")
     train_preds, test_preds, oof_preds, oof_labels, feat_importances = run_kfold(
         train_features, train_labels, test_features, config.N_FOLDS,
-        XGBRegressor, config.XGB_PARAMS, config.OUTPUT_PATH, name='xgb'
+        model, model_params, config.OUTPUT_PATH, name=config.MODEL
     )
 
     metrics = compute_metrics(train_preds, train_labels)
@@ -70,9 +78,7 @@ if __name__ == '__main__':
         logger.info(f"Average eval_{k}: {np.mean(v)}")
 
     submission = pd.read_csv(config.TEST_METAFILE)
-    submission['value'] = np.concatenate(
-        (test_preds, submission['value'].values[len(test_df):])
-    )
+    submission['value'] = test_preds
     submission.to_csv(os.path.join(config.OUTPUT_PATH, f'submission_{TIMESTAMP}.csv'), index=False)
     submission.head()
 

@@ -6,6 +6,7 @@ from tqdm import tqdm
 from src.utils import check_existance
 from typing import Tuple
 import datetime
+from loguru import logger
 
 META_COLUMNS = ['filename']
 
@@ -35,6 +36,10 @@ def _load_features(path_dir: str, total: int) -> pd.DataFrame:
             mean, var = _band.mean(), _band.std() ** 2
             features[key + '_mean'].append(mean)
             features[key + '_var'].append(var)
+    k = len(features[list(features.keys())[0]])
+    for _ in range(total - k):
+        for k in features.keys():
+            features[k].append(np.nan)
     return pd.DataFrame(features)
 
 def _impute(
@@ -46,9 +51,10 @@ def _impute(
     """
     Impute missing values in train and test data using grid wise mean data.
     """
+    logger.info("Performing grid wise mean imputation...")
     feat_columns = train_df.columns
     train_df['grid_id'] = train_metadata['grid_id']
-    test_df['grid_id'] = test_metadata['grid_id'].values[:len(test_df)]
+    test_df['grid_id'] = test_metadata['grid_id'].values
 
     for grid_id in train_metadata['grid_id'].unique():
         for col in feat_columns:
@@ -71,6 +77,7 @@ def _load_metadata(
     train_metadata: pd.DataFrame,
     test_metadata: pd.DataFrame,
 ) -> pd.DataFrame:
+    logger.info("Loading metadata...")
     grid_ids = grid_df['grid_id'].values
     elevation_means = grid_df['elevation_mean'].values
     elevation_vars = grid_df['elevation_var'].values
@@ -94,47 +101,58 @@ def _load_metadata(
     train_df['month'] = train_dts.apply(lambda x: x.month)
     train_df['day'] = train_dts.apply(lambda x: x.day)
     train_df['hour'] = train_dts.apply(lambda x: x.hour)
+    train_df['year'] = train_dts.apply(lambda x: x.year)
 
     test_df['month'] = test_dts.apply(lambda x: x.month)
     test_df['day'] = test_dts.apply(lambda x: x.day)
     test_df['hour'] = test_dts.apply(lambda x: x.hour)
+    test_df['year'] = test_dts.apply(lambda x: x.year)
     return train_df, test_df
 
-def make_dataset(
-    work_dir: str, train_dir: str, test_dir: str, 
-    train_metafile: str, test_metafile: str, grid_metafile: str,
-    filename: str='features.csv'
-) -> Tuple[str, str]:
+def prepare_dataset(
+    data_products: dict,
+    train_metafile: str, test_metafile: str, grid_metafile: str
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
     Build features from data.
     """
-    tfilename = os.path.join(work_dir, f"train_{filename}")
-    tefilename = os.path.join(work_dir, f"test_{filename}")
-    try:
-        if check_existance(tfilename) and check_existance(tefilename):
-            return tfilename, tefilename
-    except:
-        pass
 
-    train_dir = os.path.join(work_dir, train_dir)
-    check_existance(train_dir)
-    test_dir = os.path.join(work_dir, test_dir)
-    check_existance(test_dir)
-    train_metafile = os.path.join(work_dir, train_metafile)
     check_existance(train_metafile)
-    test_metafile = os.path.join(work_dir, test_metafile)
     check_existance(test_metafile)
-    grid_metafile = os.path.join(work_dir, grid_metafile)
     check_existance(grid_metafile)
 
+    train_dfs = []
+    test_dfs = []
+    for product in data_products.keys():
+        check_existance(data_products[product]['train_file'])
+        check_existance(data_products[product]['test_file'])
+
+        cur_train_df = pd.read_csv(data_products[product]['train_file'])
+        cur_test_df = pd.read_csv(data_products[product]['test_file'])
+
+        if data_products[product]['drop']:
+            cur_train_df.drop(columns=data_products[product]['drop'], inplace=True)
+            cur_test_df.drop(columns=data_products[product]['drop'], inplace=True)
+
+        columns = list(cur_train_df.columns)
+        columns = [f"{product}_{col}" for col in columns]
+
+        cur_train_df.columns = columns
+        cur_test_df.columns = columns
+
+        train_dfs.append(cur_train_df)
+        test_dfs.append(cur_test_df)
+    
+    train_df = pd.concat(train_dfs, axis=1)
+    test_df = pd.concat(test_dfs, axis=1)
     train_metadata = pd.read_csv(train_metafile)
-    train_df = _load_features(train_dir, total=len(train_metadata))
-
     test_metadata = pd.read_csv(test_metafile)
-    test_df = _load_features(test_dir, total=len(test_metadata))
 
-    print(f"Train Nan values: \n{train_df.isna().sum()}")
-    print(f"Test Nan values: \n{test_df.isna().sum()}")
+    # print(f"Train Nan values: \n{train_df.isna().sum()}")
+    # print(f"Test Nan values: \n{test_df.isna().sum()}")
+
+    train_df['row_nan_count'] = train_df.isna().sum(axis=1)
+    test_df['row_nan_count'] = test_df.isna().sum(axis=1)
 
     grid_data = pd.read_csv(grid_metafile)
 
@@ -142,13 +160,16 @@ def make_dataset(
 
     train_metadata['mean_value'] = train_metadata.groupby('grid_id')['value'].transform('mean')
     train_df['mean_value'] = train_metadata['mean_value'].values
-    test_df['mean_value'] = test_metadata['value'].values[:len(test_df)]
+    test_df['mean_value'] = test_metadata['value'].values
 
     train_df, test_df = _load_metadata(train_df, test_df, grid_data, train_metadata, test_metadata)
     train_df = train_df.drop(columns=['grid_id'])
     test_df = test_df.drop(columns=['grid_id'])
 
-    train_df.to_csv(tfilename, index=False)
-    test_df.to_csv(tefilename, index=False)
+    train_df['label'] = train_metadata['value']
+    test_df['label'] = test_metadata['value']
 
-    return tfilename, tefilename
+    train_df.to_csv('train_features.csv', index=False)
+    test_df.to_csv('test_features.csv', index=False)
+
+    return train_df, test_df

@@ -9,9 +9,9 @@ import os
 def run_kfold(
 	train_features, train_labels, test_features,
     n_folds, model, model_params,
-	save_dir, name='model',
+	save_dir, name='model', seed=42
 ):
-    kf = KFold(n_splits=n_folds)
+    kf = KFold(n_splits=n_folds, shuffle=False)
     oof_preds = []
     oof_labels = []
     train_preds = np.zeros((len(train_labels)))
@@ -20,7 +20,8 @@ def run_kfold(
     tim = Timer()
 
     logger.info(f"Training model with {n_folds} folds...")
-    for fold, (train_idx, val_idx) in tqdm(enumerate(kf.split(train_features))):
+    bar = tqdm(total=n_folds)
+    for fold, (train_idx, val_idx) in enumerate(kf.split(train_features)):
         x_train, x_val = train_features[train_idx], train_features[val_idx]
         y_train, y_val = train_labels[train_idx], train_labels[val_idx]
         reg = model(**model_params)
@@ -43,8 +44,9 @@ def run_kfold(
         feat_importances += reg.feature_importances_
 
         pickle.dump(reg, open(os.path.join(save_dir, f"{name}_fold-{fold + 1}.pkl"), "wb"))
+        bar.update()
         
-    train_preds /= n_folds
+    train_preds /= (n_folds - 1)
     test_preds /= n_folds
     feat_importances /= n_folds
 

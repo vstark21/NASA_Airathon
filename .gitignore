@@ -142,3 +142,4 @@ logs/
 submission/
 *.tmp
 !src/data
+catboost_info/

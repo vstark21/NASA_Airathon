@@ -1,10 +1,20 @@
 ---
 OUTPUT_PATH: 'logs/'
+
+DATA_PRODUCTS:
+  maiac:
+    train_file: 'data/proc/train_maiac.csv'
+    test_file: 'data/proc/test_maiac.csv'
+    drop: []
+  misr:
+    train_file: 'data/proc/train_misr.csv'
+    test_file: 'data/proc/test_misr.csv'
+    drop: ['Latitude_mean', 'Latitude_var', 'Longitude_mean', 'Longitude_var', 'filename']
+
 TRAIN_METAFILE: 'data/train_labels.csv'
 TEST_METAFILE: 'submission/submission_0.csv'
 GRID_METAFILE: 'data/grid_metadata.csv'
-TRAIN_DIR: 'data/proc_data/'
-TEST_DIR: 'data/proc_data_test/'
+
 N_FOLDS: 5
 XGB_PARAMS:
   learning_rate : 0.006191036283375376
