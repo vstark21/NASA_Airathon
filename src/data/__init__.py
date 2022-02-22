@@ -79,34 +79,36 @@ def _load_metadata(
 ) -> pd.DataFrame:
     logger.info("Loading metadata...")
     grid_ids = grid_df['grid_id'].values
+    tzs = grid_df['tz'].values
     elevation_means = grid_df['elevation_mean'].values
     elevation_vars = grid_df['elevation_var'].values
+
+    train_dts = pd.to_datetime(
+        train_metadata['datetime'], format="%Y-%m-%dT%H:%M:%SZ", utc=True)
+    test_dts = pd.to_datetime(
+        test_metadata['datetime'], format="%Y-%m-%dT%H:%M:%SZ", utc=True)
 
     for i in range(len(grid_ids)):
         indices = train_df[train_df['grid_id'] == grid_ids[i]].index
         train_df.loc[indices, 'elevation_mean'] = elevation_means[i]
         train_df.loc[indices, 'elevation_var'] = elevation_vars[i]
+        
+        loc_train_dts = train_dts.loc[indices]
+        loc_train_dts = loc_train_dts.dt.tz_convert(tzs[i])
+        train_df.loc[indices, 'month'] = loc_train_dts.apply(lambda x: x.month)
+        train_df.loc[indices, 'day'] = loc_train_dts.apply(lambda x: x.day)
+        train_df.loc[indices, 'hour'] = loc_train_dts.apply(lambda x: x.hour)
 
         indices = test_df[test_df['grid_id'] == grid_ids[i]].index
         test_df.loc[indices, 'elevation_mean'] = elevation_means[i]
         test_df.loc[indices, 'elevation_var'] = elevation_vars[i]
-    
-    train_dts = train_metadata['datetime'].apply(
-        lambda x: datetime.datetime.strptime(x, '%Y-%m-%dT%H:%M:%SZ')
-    )
-    test_dts = test_metadata['datetime'].apply(
-        lambda x: datetime.datetime.strptime(x, '%Y-%m-%dT%H:%M:%SZ')
-    )
 
-    train_df['month'] = train_dts.apply(lambda x: x.month)
-    train_df['day'] = train_dts.apply(lambda x: x.day)
-    train_df['hour'] = train_dts.apply(lambda x: x.hour)
-    train_df['year'] = train_dts.apply(lambda x: x.year)
+        loc_test_dts = test_dts.loc[indices]
+        loc_test_dts = loc_test_dts.dt.tz_convert(tzs[i])
+        test_df.loc[indices, 'month'] = loc_test_dts.apply(lambda x: x.month)
+        test_df.loc[indices, 'day'] = loc_test_dts.apply(lambda x: x.day)
+        test_df.loc[indices, 'hour'] = loc_test_dts.apply(lambda x: x.hour)
 
-    test_df['month'] = test_dts.apply(lambda x: x.month)
-    test_df['day'] = test_dts.apply(lambda x: x.day)
-    test_df['hour'] = test_dts.apply(lambda x: x.hour)
-    test_df['year'] = test_dts.apply(lambda x: x.year)
     return train_df, test_df
 
 def prepare_dataset(
