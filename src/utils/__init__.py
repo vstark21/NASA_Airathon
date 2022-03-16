@@ -18,7 +18,7 @@ class Timer:
         
     def _format_time(self, seconds):
         """
-        Formates time in human readable form
+        Formats time in human readable form
 
         Args:
             seconds: seconds passed in a process

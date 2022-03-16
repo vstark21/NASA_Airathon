@@ -23,7 +23,6 @@ from src.data import prepare_dataset
 from src.models import run_kfold
 from xgboost import XGBRegressor
 from catboost import CatBoostRegressor
-from lightgbm import LGBMRegressor
 
 from src.utils import *
 from loguru import logger
@@ -49,16 +48,16 @@ if __name__ == '__main__':
         config.TRAIN_METAFILE, config.TEST_METAFILE, config.GRID_METAFILE
     )
     
-    # dataplot = sns.heatmap(
-    #     train_df[['maiac_AOD_Uncertainty_mean', 'maiac_AOD_Uncertainty_var',
-    #    'maiac_Column_WV_mean', 'maiac_Column_WV_var', 'maiac_AOD_QA_mean',
-    #    'maiac_AOD_QA_var', 'maiac_AOD_MODEL_mean', 'maiac_AOD_MODEL_var',
-    #    'misr_Aerosol_Optical_Depth_mean', 'row_nan_count',
-    #    'mean_value', 'elevation_mean', 'elevation_var', 'month', 'day',
-    #    'label']].corr(), cmap="YlGnBu"
-    # )
-    # plt.savefig(os.path.join(config.OUTPUT_PATH, 'feature_correlation.png'))
-    # plt.show()
+    train_metadata = pd.read_csv(config.TRAIN_METAFILE)
+    test_metadata = pd.read_csv(config.TEST_METAFILE)
+    grid_metadata = pd.read_csv(config.GRID_METAFILE)
+
+    train_metadata['location'] = train_metadata['grid_id'].apply(
+        lambda x: grid_metadata[grid_metadata['grid_id'] == x]['location'].values[0]
+    )
+    test_metadata['location'] = test_metadata['grid_id'].apply(
+        lambda x: grid_metadata[grid_metadata['grid_id'] == x]['location'].values[0]
+    )
 
     train_labels = train_df['label'].to_numpy()
     train_df = train_df.drop(['label'], axis=1)
@@ -67,7 +66,7 @@ if __name__ == '__main__':
     train_features = train_df.to_numpy()
     test_features = test_df.to_numpy()
 
-    logger.info(f"Using following features: {list(train_df.columns)}")
+    logger.info(f"Using following features: {train_df.columns}")
     logger.info(f"Found {len(train_features)} training instances")
     if config.MODEL == 'xgboost':
         model = XGBRegressor
@@ -75,31 +74,50 @@ if __name__ == '__main__':
     elif config.MODEL == 'catboost':
         model = CatBoostRegressor
         model_params = config.CATB_PARAMS
-    elif config.MODEL == 'lightgbm':
-        model = LGBMRegressor
-        model_params = config.LGBM_PARAMS
     else:
         raise ValueError(f"Model {config.MODEL} not supported")
 
     logger.info(f"Training {config.MODEL} model")
-    train_preds, test_preds, oof_preds, oof_labels, feat_importances = run_kfold(
-        train_features, train_labels, test_features, config.N_FOLDS,
-        model, model_params, config.OUTPUT_PATH, name=config.MODEL
-    )
+    all_feat_importances = np.zeros((len(train_features[0])))
+    all_train_preds = np.zeros((len(train_features)))
+    all_test_preds = np.zeros((len(test_features)))
+    all_oof_preds = []
+    all_oof_labels = []
 
-    metrics = compute_metrics(train_preds, train_labels)
+    for loc in train_metadata['location'].unique():
+
+        train_indices = (train_metadata['location'] == loc).index
+        test_indices = (test_metadata['location'] == loc).index
+
+        logger.info(f"Training model for location {loc} with {len(train_indices)} train instances and {len(test_indices)} instances...")
+
+        train_preds, test_preds, oof_preds, oof_labels, feat_importances = run_kfold(
+            train_features[train_indices], 
+            train_labels[train_indices], 
+            test_features[test_indices], config.N_FOLDS,
+            model, model_params, config.OUTPUT_PATH, name=config.MODEL + '_' + loc
+        )
+        all_train_preds[train_indices] = train_preds
+        all_test_preds[test_indices] = test_preds
+        all_oof_preds.append(oof_preds)
+        all_oof_labels.append(oof_labels)
+        all_feat_importances += feat_importances
+
+    metrics = compute_metrics(all_train_preds, train_labels)
     for k, v in metrics.items():
         logger.info(f"Average train_{k}: {np.mean(v)}")
-    metrics = compute_metrics(np.array(oof_preds), np.array(oof_labels))
+    metrics = compute_metrics(np.array(all_oof_preds), np.array(all_oof_labels))
     for k, v in metrics.items():
         logger.info(f"Average eval_{k}: {np.mean(v)}")
-
+    
     submission = pd.read_csv(config.TEST_METAFILE)
-    submission['value'] = test_preds
-    submission.to_csv(os.path.join(config.OUTPUT_PATH, f'submission_{TIMESTAMP}.csv'), index=False)
+    submission['value'] = all_test_preds
+    submission.to_csv(
+        os.path.join(config.OUTPUT_PATH, f'submission_{TIMESTAMP}.csv'), index=False
+    )
     submission.head()
-
-    plt.barh(train_df.columns, feat_importances)
+    
+    plt.barh(train_df.columns, all_feat_importances)
     plt.yticks(fontsize='xx-small')
     plt.savefig(os.path.join(config.OUTPUT_PATH, 'feature_importance.png'))
     plt.show()

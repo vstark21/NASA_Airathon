@@ -97,7 +97,7 @@ def _load_metadata(
         loc_train_dts = loc_train_dts.dt.tz_convert(tzs[i])
         train_df.loc[indices, 'month'] = loc_train_dts.apply(lambda x: x.month)
         train_df.loc[indices, 'day'] = loc_train_dts.apply(lambda x: x.day)
-        train_df.loc[indices, 'hour'] = loc_train_dts.apply(lambda x: x.hour)
+        # train_df.loc[indices, 'hour'] = loc_train_dts.apply(lambda x: x.hour)
 
         indices = test_df[test_df['grid_id'] == grid_ids[i]].index
         test_df.loc[indices, 'elevation_mean'] = elevation_means[i]
@@ -107,7 +107,69 @@ def _load_metadata(
         loc_test_dts = loc_test_dts.dt.tz_convert(tzs[i])
         test_df.loc[indices, 'month'] = loc_test_dts.apply(lambda x: x.month)
         test_df.loc[indices, 'day'] = loc_test_dts.apply(lambda x: x.day)
-        test_df.loc[indices, 'hour'] = loc_test_dts.apply(lambda x: x.hour)
+        # test_df.loc[indices, 'hour'] = loc_test_dts.apply(lambda x: x.hour)
+
+    train_df['location'] = train_metadata['grid_id'].apply(
+        lambda x: grid_df[grid_df['grid_id'] == x]['location'].values[0])
+    test_df['location'] = test_metadata['grid_id'].apply(
+        lambda x: grid_df[grid_df['grid_id'] == x]['location'].values[0])
+    location_encoding = {
+        x: i for i, x in enumerate(grid_df['location'].unique())
+    }
+    train_df['location'] = train_df['location'].apply(
+        lambda x: location_encoding[x])
+    test_df['location'] = test_df['location'].apply(
+        lambda x: location_encoding[x])
+
+    return train_df, test_df
+
+def _load_temporal_features(
+    train_df: pd.DataFrame, 
+    test_df: pd.DataFrame,
+    grid_df: pd.DataFrame,
+    train_metadata: pd.DataFrame,
+    test_metadata: pd.DataFrame,
+):
+    grid_ins_count = defaultdict(lambda: 0)
+    temporal_data = defaultdict(lambda: [])
+    temporal_columns = [col for col in train_df.columns if col.endswith('_mean')]
+
+    logger.info("Loading temporal features...")
+    for idx in tqdm(range(train_df.shape[0])):
+        grid_id = train_metadata.iloc[idx]['grid_id']
+        indices = (train_metadata['grid_id'] == grid_id).index
+        if grid_ins_count[grid_id] == 0:
+            for col in temporal_columns:
+                temporal_data[col + "_temporal_diff"].append(0)
+        else:
+            prev_idx = indices[grid_ins_count[grid_id] - 1]
+            el1 = train_df.iloc[idx]
+            el2 = train_df.iloc[prev_idx]
+            for col in temporal_columns:
+                temporal_data[col + "_temporal_diff"].append(
+                    el1[col] - el2[col]
+                )
+        grid_ins_count[grid_id] += 1
+    train_df = pd.concat((train_df, pd.DataFrame(temporal_data)), axis=1)
+
+    grid_ins_count = defaultdict(lambda: 0)
+    temporal_data = defaultdict(lambda: [])
+    for idx in tqdm(range(test_df.shape[0])):
+        grid_id = test_metadata.iloc[idx]['grid_id']
+        indices = (test_metadata['grid_id'] == grid_id).index
+        if grid_ins_count[grid_id] == 0:
+            for col in temporal_columns:
+                temporal_data[col + "_temporal_diff"].append(0)
+        else:
+            prev_idx = indices[grid_ins_count[grid_id] - 1]
+            el1 = test_df.iloc[idx]
+            el2 = test_df.iloc[prev_idx]
+            for col in temporal_columns:
+                temporal_data[col + "_temporal_diff"].append(
+                    el1[col] - el2[col]
+                )
+        grid_ins_count[grid_id] += 1
+    test_df = pd.concat((test_df, pd.DataFrame(temporal_data)), axis=1)
 
     return train_df, test_df
 
@@ -159,6 +221,7 @@ def prepare_dataset(
     grid_data = pd.read_csv(grid_metafile)
 
     train_df, test_df = _impute(train_df, test_df, train_metadata, test_metadata)
+    train_df, test_df = _load_temporal_features(train_df, test_df, grid_data, train_metadata, test_metadata)
 
     train_metadata['mean_value'] = train_metadata.groupby('grid_id')['value'].transform('mean')
     train_df['mean_value'] = train_metadata['mean_value'].values

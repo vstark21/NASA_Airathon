@@ -11,7 +11,11 @@ def run_kfold(
     n_folds, model, model_params,
 	save_dir, name='model', seed=42
 ):
-    kf = KFold(n_splits=n_folds, shuffle=False)
+    kf = KFold(
+        n_splits=n_folds, 
+        shuffle=True,
+        random_state=seed
+    )
     oof_preds = []
     oof_labels = []
     train_preds = np.zeros((len(train_labels)))
