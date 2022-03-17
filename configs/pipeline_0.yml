@@ -24,7 +24,7 @@ DATA_PRODUCTS:
     drop: ['latitude_mean', 'latitude_var', 'longitude_mean', 'longitude_var']
 
 TRAIN_METAFILE: 'data/train_labels.csv'
-TEST_METAFILE: 'submission/submission_0.csv'
+TEST_METAFILE: 'data/submission_0.csv'
 GRID_METAFILE: 'data/grid_metadata.csv'
 
 N_FOLDS: 5
