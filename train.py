@@ -24,6 +24,7 @@ from src.models import run_kfold
 from xgboost import XGBRegressor
 from catboost import CatBoostRegressor
 from lightgbm import LGBMRegressor
+import wandb
 
 from src.utils import *
 from loguru import logger

@@ -143,3 +143,5 @@ submission/
 *.tmp
 !src/data
 catboost_info/
+!data/proc
+wandb

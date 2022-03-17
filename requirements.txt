@@ -1,8 +1,11 @@
 loguru
-xgboost
 scikit-learn
 pandas
 numpy
 matplotlib
 pyaml
 opencv-python
+xgboost
+catboost
+lightgbm
+wandb
