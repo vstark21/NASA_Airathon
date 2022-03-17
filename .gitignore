@@ -130,7 +130,7 @@ dmypy.json
 
 
 # Custom
-data/
+data/raw
 *.zip
 *.csv
 *.sh.*
@@ -141,7 +141,6 @@ temp*
 logs/
 submission/
 *.tmp
-!src/data
 catboost_info/
-!data/proc
 wandb
+!data/proc/*.csv
