@@ -15,7 +15,7 @@ if not os.path.exists(OUTPUT_PATH):
 logger.add(os.path.join(OUTPUT_PATH, 'logs.log'))
 
 files = [
-    # "D:/Repositories/NASA_Airathon/logs/2022-03-07-19-47/submission_2022-03-07-19-47.csv",
+    "D:/Repositories/NASA_Airathon/logs/2022-03-07-19-47/submission_2022-03-07-19-47.csv",
     # "D:/Repositories/NASA_Airathon/logs/2022-03-12-10-21/submission_2022-03-12-10-21.csv",
 #     "D:/Repositories/NASA_Airathon/logs/2022-03-08-17-19/submission_2022-03-08-17-19.csv",
 #     "D:/Repositories/NASA_Airathon/logs/2022-02-23-12-59/submission_2022-02-23-12-59.csv",
@@ -37,11 +37,14 @@ files = [
     # "D:/Repositories/NASA_Airathon/logs/2022-03-16-11-08/submission_2022-03-16-11-08.csv",
     # "D:/Repositories/NASA_Airathon/logs/2022-03-16-12-31/submission_2022-03-16-12-31.csv",
     # "D:/Repositories/NASA_Airathon/logs/2022-03-16-13-37/submission_2022-03-16-13-37.csv",
-    "D:/Repositories/NASA_Airathon/submission.csv"
+    "D:/Repositories/NASA_Airathon/submission.csv",
+    "D:/Repositories/NASA_Airathon/logs/2022-03-17-13-52/submission_2022-03-17-13-52.csv",
+    "D:/Repositories/NASA_Airathon/logs/2022-03-17-14-45/submission_2022-03-17-14-45.csv",
+    "D:/Repositories/NASA_Airathon/logs/2022-03-17-17-36/submission_2022-03-17-17-36.csv",
 ]
 
 scores = [
-    # 0.6967,
+    0.6967,
     # 0.6866,
     # 0.6954,
     # 0.6963,
@@ -63,7 +66,10 @@ scores = [
     # 0.6890,
     # "N/A",
     # "N/A",
-    "N/A"
+    "N/A",
+    "N/A",
+    "N/A",
+    "N/A",
 ]
 
 preds = 0

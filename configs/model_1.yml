@@ -33,23 +33,17 @@ TEST_METAFILE: 'submission/submission_0.csv'
 GRID_METAFILE: 'data/grid_metadata.csv'
 
 N_FOLDS: 5
-MODEL: 'xgboost'
-XGB_PARAMS: 
-  # learning_rate: 0.0013715793346158263
-  # n_estimators: 4500
-  # reg_lambda: 25
-  # reg_alpha: 9
-  # subsample: 0.5
-  # colsample_bytree: 0.7
-  # max_depth: 7
-  # min_child_weight: 4
-  # gamma: 12.935209427694943
-  learning_rate: 0.002419340658772126
-  n_estimators: 4500
-  reg_lambda: 3
-  reg_alpha: 28
-  subsample: 0.30000000000000004
-  colsample_bytree: 0.5
-  max_depth: 3
-  min_child_weight: 10
-  gamma: 17.06345289995657
+MODEL: 'catboost'
+CATB_PARAMS:
+  # task_type: "GPU"
+  bootstrap_type: 'Bernoulli'
+  verbose: 0
+  n_estimators: 1129
+  od_wait: 56
+  learning_rate: 0.09715853782392174
+  reg_lambda: 55.75391498204694
+  subsample: 0.9166100705655346
+  random_strength: 12.451033717813278
+  depth: 6
+  min_data_in_leaf: 1
+  leaf_estimation_iterations: 8

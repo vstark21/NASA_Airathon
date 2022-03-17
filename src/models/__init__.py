@@ -10,12 +10,14 @@ def run_kfold(
 	train_features, train_labels, test_features,
     n_folds, model, model_params,
 	save_dir, name='model', seed=42
-):
-    kf = KFold(
-        n_splits=n_folds, 
-        shuffle=True,
-        random_state=seed
-    )
+):  
+    kf = KFold(n_splits=n_folds)
+    if seed:
+        kf = KFold(
+            n_splits=n_folds, 
+            shuffle=True,
+            random_state=seed
+        )
     oof_preds = []
     oof_labels = []
     train_preds = np.zeros((len(train_labels)))
@@ -47,7 +49,10 @@ def run_kfold(
         # Feature importance
         feat_importances += reg.feature_importances_
 
-        pickle.dump(reg, open(os.path.join(save_dir, f"{name}_fold-{fold + 1}.pkl"), "wb"))
+        pickle.dump(
+            reg, 
+            open(os.path.join(save_dir, f"{name}_fold-{fold + 1}.pkl"), "wb")
+        )
         bar.update()
         
     train_preds /= (n_folds - 1)
