@@ -60,7 +60,7 @@ def get_params(model, config):
     elif model == 'catb_tuned':
         params = config.CATB_PARAMS
     elif model == 'lgbm_tuned':
-        params = config.LGB_PARAMS
+        params = config.LGBM_PARAMS
     else:
         raise ValueError(f'Model {model} not supported for params')
     return params
