@@ -144,3 +144,4 @@ submission/
 catboost_info/
 wandb
 !data/proc/*.csv
+!data/*.csv
