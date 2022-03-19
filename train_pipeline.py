@@ -19,7 +19,6 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 from collections import defaultdict
 from sklearn.linear_model import LinearRegression
-import wandb
 
 from src.data import prepare_dataset
 from src.models import run_kfold, feature_selection
@@ -74,13 +73,6 @@ if __name__ == '__main__':
         os.makedirs(config.OUTPUT_PATH)
     logger.add(os.path.join(config.OUTPUT_PATH, 'logs.log'))
     logger.info(f"Config:{str(config)}")
-
-    if config.USE_WANDB:
-        wandb.init(
-            project="NASA_PM", 
-            entity="vstark21",
-            config=config
-        )
     
     train_df, test_df = prepare_dataset(
         config.DATA_PRODUCTS,
@@ -146,10 +138,16 @@ if __name__ == '__main__':
     plt.yticks(fontsize='xx-small')
     plt.savefig(os.path.join(config.OUTPUT_PATH, 'l0_feature_importance.png'))
 
-    logger.info(tim.beep("Level 0 training finished in"))
+    logger.info(tim.beep("Level 0 training finished in "))
     
     train_level0_oof = pd.DataFrame(train_level0_oof)
     test_level0_oof = pd.DataFrame(test_level0_oof)
+    train_level0_oof.to_csv(os.path.join(config.OUTPUT_PATH, 'train_level0_oof.csv'), index=False)
+    test_level0_oof.to_csv(os.path.join(config.OUTPUT_PATH, 'test_level0_oof.csv'), index=False)
+
+    submission = pd.read_csv(config.TEST_METAFILE)
+    submission['value'] = test_level0_oof.mean(axis=1)
+    submission.to_csv(os.path.join(config.OUTPUT_PATH, f'l0avg_submission_{TIMESTAMP}.csv'), index=False)
 
     # ============================== L E V E L - 1  T R A I N I N G ============================== #
     logger.info(f"Starting level 1 training...")
@@ -172,12 +170,8 @@ if __name__ == '__main__':
     plt.yticks(fontsize='xx-small')
     plt.savefig(os.path.join(config.OUTPUT_PATH, 'l1_feature_importance.png'))
 
-    logger.info(tim.beep("Level 1 training finished in"))
+    logger.info(tim.beep("Level 1 training finished in "))
 
     submission = pd.read_csv(config.TEST_METAFILE)
     submission['value'] = test_preds
     submission.to_csv(os.path.join(config.OUTPUT_PATH, f'submission_{TIMESTAMP}.csv'), index=False)
-    submission.head()
-
-    if config.USE_WANDB:
-        wandb.save(os.path.join(config.OUTPUT_PATH, "*"))

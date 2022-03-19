@@ -28,7 +28,6 @@ TEST_METAFILE: 'data/submission_0.csv'
 GRID_METAFILE: 'data/grid_metadata.csv'
 
 N_FOLDS: 5
-USE_WANDB: True
 
 FEATURE_SELECTION: False
 FEATURES_THRESHOLD: null
@@ -37,9 +36,9 @@ FS_SAMPLE_PERCENTAGE: 0.25
 FS_MODELS: ['xgb', 'catb', 'lgbm']
 FS_SEEDS: [null]
 
-MODELS: ['xgb', 'xgb_tuned', 'catb', 'catb_tuned', 'lgbm', 'lgbm_tuned']
+MODELS: ['xgb_tuned', 'catb_tuned', 'lgbm_tuned']
 # SEEDS: [42, 2022, 1680, null]
-SEEDS: [42, null]
+SEEDS: [null]
 
 BLENDER: 'linreg'
 BLENDER_SEED: 42
