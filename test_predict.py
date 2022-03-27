@@ -6,7 +6,7 @@ import time
 from src.utils import Timer
 
 test_data = pd.read_csv('data/submission_format.csv')
-original = pd.read_csv("D:/Repositories/NASA_Airathon/submission/2022-03-26-17-31/submission_2022-03-26-17-31.csv")
+original = pd.read_csv("submission/2022-03-26-17-31/submission_2022-03-26-17-31.csv")
 tim = Timer()
 random.seed(42)
 for i in range(10):
