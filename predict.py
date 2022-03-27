@@ -119,7 +119,9 @@ if __name__ == '__main__':
     # ============================== P R E P A R I N G  D A T A ============================== #
     df['row_nan_count'] = df.isna().sum(axis=1)
     for col in df.columns:
-        df[col] = df[col].fillna(config.GRID_WISE_MEAN_IMPUTATION[config.GRID_ID][col])
+        _fill_value = config.GRID_WISE_MEAN_IMPUTATION[config.GRID_ID][col]
+        if _fill_value != "nan":
+            df[col] = df[col].fillna(_fill_value)
     df = df.fillna(0)
     
     df = load_temporal_features(df)
