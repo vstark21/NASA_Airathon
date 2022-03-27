@@ -8,6 +8,6 @@ opencv-python
 xgboost
 catboost
 lightgbm
-wandb
 seaborn
+pygrib
 tqdm

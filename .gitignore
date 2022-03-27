@@ -145,3 +145,8 @@ catboost_info/
 wandb
 !data/proc/*.csv
 !data/*.csv
+clutter/
+data/backup/*
+*.hdf
+*.nc
+*.grib2

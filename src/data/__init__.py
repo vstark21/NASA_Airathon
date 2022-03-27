@@ -42,6 +42,53 @@ def _load_features(path_dir: str, total: int) -> pd.DataFrame:
             features[k].append(np.nan)
     return pd.DataFrame(features)
 
+def _temporal_impute(
+    train_df: pd.DataFrame, 
+    test_df: pd.DataFrame,
+    train_metadata: pd.DataFrame,
+    test_metadata: pd.DataFrame,
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Impute missing values in train and test data using temporal grid wise data.
+    """
+    logger.info("Performing temporal grid wise imputation...")
+    train_df['datetime_p'] = train_metadata['datetime'].apply(
+    lambda x: datetime.datetime.strptime(x, "%Y-%m-%dT%H:%M:%SZ")
+    )
+    test_df['datetime_p'] = test_metadata['datetime'].apply(
+        lambda x: datetime.datetime.strptime(x, "%Y-%m-%dT%H:%M:%SZ")
+    )
+    for idx in tqdm(range(train_df.shape[0])):
+        el = train_df.iloc[idx]
+        grid_id = train_metadata.iloc[idx]['grid_id']
+        indices = train_metadata[train_metadata['grid_id'] == grid_id].index
+        cur_train_df = train_df.loc[indices]
+        dt = el['datetime_p']
+        
+        possible = cur_train_df[cur_train_df['datetime_p'] < dt].sort_values('datetime_p', ascending=False).reset_index()
+        if len(possible) == 0:
+            continue
+        el_ = possible.iloc[0]        
+        train_df.iloc[idx] = el.fillna(el_)    
+        
+    for idx in tqdm(range(test_df.shape[0])):
+        el = test_df.iloc[idx]
+        grid_id = test_metadata.iloc[idx]['grid_id']
+        indices = test_metadata[test_metadata['grid_id'] == grid_id].index
+        cur_test_df = test_df.loc[indices]
+        dt = el['datetime_p']
+        
+        possible = cur_test_df[cur_test_df['datetime_p'] < dt].sort_values('datetime_p', ascending=False).reset_index()
+        if len(possible) == 0:
+            continue
+        el_ = possible.iloc[0]        
+        test_df.iloc[idx] = el.fillna(el_)      
+        
+    train_df = train_df.drop(columns=['datetime_p'])
+    test_df = test_df.drop(columns=['datetime_p'])
+    
+    return train_df, test_df
+
 def _impute(
     train_df: pd.DataFrame, 
     test_df: pd.DataFrame,
@@ -52,9 +99,7 @@ def _impute(
     Impute missing values in train and test data using grid wise mean data.
     """
     logger.info("Performing grid wise mean imputation...")
-    feat_columns = train_df.columns
-    train_df['grid_id'] = train_metadata['grid_id']
-    test_df['grid_id'] = test_metadata['grid_id'].values
+    feat_columns = [col for col in train_df.columns if col != 'grid_id']
 
     for grid_id in train_metadata['grid_id'].unique():
         for col in feat_columns:
@@ -137,7 +182,7 @@ def _load_temporal_features(
     logger.info("Loading temporal features...")
     for idx in tqdm(range(train_df.shape[0])):
         grid_id = train_metadata.iloc[idx]['grid_id']
-        indices = (train_metadata['grid_id'] == grid_id).index
+        indices = train_metadata[train_metadata['grid_id'] == grid_id].index
         if grid_ins_count[grid_id] == 0:
             for col in temporal_columns:
                 temporal_data[col + "_temporal_diff"].append(0)
@@ -156,7 +201,7 @@ def _load_temporal_features(
     temporal_data = defaultdict(lambda: [])
     for idx in tqdm(range(test_df.shape[0])):
         grid_id = test_metadata.iloc[idx]['grid_id']
-        indices = (test_metadata['grid_id'] == grid_id).index
+        indices = test_metadata[test_metadata['grid_id'] == grid_id].index
         if grid_ins_count[grid_id] == 0:
             for col in temporal_columns:
                 temporal_data[col + "_temporal_diff"].append(0)
@@ -212,6 +257,9 @@ def prepare_dataset(
     train_metadata = pd.read_csv(train_metafile)
     test_metadata = pd.read_csv(test_metafile)
 
+    train_df['grid_id'] = train_metadata['grid_id']
+    test_df['grid_id'] = test_metadata['grid_id']
+
     # print(f"Train Nan values: \n{train_df.isna().sum()}")
     # print(f"Test Nan values: \n{test_df.isna().sum()}")
 
@@ -220,6 +268,7 @@ def prepare_dataset(
 
     grid_data = pd.read_csv(grid_metafile)
 
+    # train_df, test_df = _temporal_impute(train_df, test_df, train_metadata, test_metadata)
     train_df, test_df = _impute(train_df, test_df, train_metadata, test_metadata)
     train_df, test_df = _load_temporal_features(train_df, test_df, grid_data, train_metadata, test_metadata)
 
@@ -234,7 +283,7 @@ def prepare_dataset(
     train_df['label'] = train_metadata['value']
     test_df['label'] = test_metadata['value']
 
-    train_df.to_csv('train_features.csv', index=False)
-    test_df.to_csv('test_features.csv', index=False)
+    train_df.to_csv('tmptrain_features.csv', index=False)
+    test_df.to_csv('tmptest_features.csv', index=False)
 
     return train_df, test_df

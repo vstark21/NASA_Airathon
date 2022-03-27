@@ -23,6 +23,7 @@ from src.data import prepare_dataset
 from src.models import run_kfold
 from xgboost import XGBRegressor
 from catboost import CatBoostRegressor
+from lightgbm import LGBMRegressor
 
 from src.utils import *
 from loguru import logger
@@ -30,7 +31,7 @@ TIMESTAMP = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M")
 
 # Arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('--config', dest='config', type=str, help='Path to the config file', default='configs/config.yml')
+parser.add_argument('--config', dest='config', type=str, help='Path to the config file', default='configs/model_0.yml')
 args = parser.parse_args()
 
 if __name__ == '__main__':
@@ -74,6 +75,9 @@ if __name__ == '__main__':
     elif config.MODEL == 'catboost':
         model = CatBoostRegressor
         model_params = config.CATB_PARAMS
+    elif config.MODEL == 'lightgbm':
+        model = LGBMRegressor
+        model_params = config.LGBM_PARAMS
     else:
         raise ValueError(f"Model {config.MODEL} not supported")
 
@@ -81,17 +85,16 @@ if __name__ == '__main__':
     all_feat_importances = np.zeros((len(train_features[0])))
     all_train_preds = np.zeros((len(train_features)))
     all_test_preds = np.zeros((len(test_features)))
-    all_oof_preds = []
-    all_oof_labels = []
+    all_oof_preds = np.zeros((len(train_features)))
 
     for loc in train_metadata['location'].unique():
 
-        train_indices = (train_metadata['location'] == loc).index
-        test_indices = (test_metadata['location'] == loc).index
+        train_indices = train_metadata[train_metadata['location'] == loc].index
+        test_indices = test_metadata[test_metadata['location'] == loc].index
 
-        logger.info(f"Training model for location {loc} with {len(train_indices)} train instances and {len(test_indices)} instances...")
+        logger.info(f"Training model for location {loc} with {len(train_indices)} train instances and {len(test_indices)} test instances...")
 
-        train_preds, test_preds, oof_preds, oof_labels, feat_importances = run_kfold(
+        train_preds, test_preds, oof_preds, feat_importances = run_kfold(
             train_features[train_indices], 
             train_labels[train_indices], 
             test_features[test_indices], config.N_FOLDS,
@@ -99,16 +102,22 @@ if __name__ == '__main__':
         )
         all_train_preds[train_indices] = train_preds
         all_test_preds[test_indices] = test_preds
-        all_oof_preds.append(oof_preds)
-        all_oof_labels.append(oof_labels)
+        all_oof_preds[train_indices] = oof_preds
         all_feat_importances += feat_importances
+
+        metrics = compute_metrics(train_preds, train_labels[train_indices])
+        for k, v in metrics.items():
+            logger.info(f"Average train_{k}: {np.mean(v)}")
+        metrics = compute_metrics(oof_preds, train_labels[train_indices])
+        for k, v in metrics.items():
+            logger.info(f"Average eval_{k}: {np.mean(v)}")
 
     metrics = compute_metrics(all_train_preds, train_labels)
     for k, v in metrics.items():
-        logger.info(f"Average train_{k}: {np.mean(v)}")
-    metrics = compute_metrics(np.array(all_oof_preds), np.array(all_oof_labels))
+        logger.info(f"Overall Average train_{k}: {np.mean(v)}")
+    metrics = compute_metrics(all_oof_preds, train_labels)
     for k, v in metrics.items():
-        logger.info(f"Average eval_{k}: {np.mean(v)}")
+        logger.info(f"Overall Average eval_{k}: {np.mean(v)}")
     
     submission = pd.read_csv(config.TEST_METAFILE)
     submission['value'] = all_test_preds
@@ -116,8 +125,13 @@ if __name__ == '__main__':
         os.path.join(config.OUTPUT_PATH, f'submission_{TIMESTAMP}.csv'), index=False
     )
     submission.head()
-    
-    plt.barh(train_df.columns, all_feat_importances)
+
+    all_feat_importances = [
+        [train_df.columns[i], all_feat_importances[i]] for i in range(len(train_df.columns))
+    ]
+    all_feat_importances.sort(key=lambda x: x[1])
+    level0_feat_importance = np.array(all_feat_importances)
+    plt.barh(level0_feat_importance[:, 0], level0_feat_importance[:, 1])
     plt.yticks(fontsize='xx-small')
     plt.savefig(os.path.join(config.OUTPUT_PATH, 'feature_importance.png'))
     plt.show()

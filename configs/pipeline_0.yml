@@ -3,8 +3,8 @@ OUTPUT_PATH: 'logs/'
 
 DATA_PRODUCTS:
   maiac:
-    train_file: 'data/proc/train_maiac.csv'
-    test_file: 'data/proc/test_maiac.csv'
+    train_file: 'data/proc/temp_train_maiac.csv'
+    test_file: 'data/proc/temp_test_maiac.csv'
     drop: [
       'FineModeFraction_mean', 'FineModeFraction_var'
     ]
@@ -31,14 +31,15 @@ N_FOLDS: 5
 
 FEATURE_SELECTION: False
 FEATURES_THRESHOLD: null
-TOPK_FEATURES: null
-FS_SAMPLE_PERCENTAGE: 0.25
-FS_MODELS: ['xgb', 'catb', 'lgbm']
-FS_SEEDS: [null]
+TOPK_FEATURES: 40
+FS_SAMPLE_PERCENTAGE: 0.5
+FS_MODELS: ['xgb_tuned', 'lgbm_tuned']
+FS_SEEDS: [42]
 
+# MODELS: ['xgb_tuned', 'catb_tuned', 'lgbm_tuned']
 MODELS: ['xgb_tuned', 'catb_tuned', 'lgbm_tuned']
 # SEEDS: [42, 2022, 1680, null]
-SEEDS: [null]
+SEEDS: [42]
 
 BLENDER: 'linreg'
 BLENDER_SEED: 42

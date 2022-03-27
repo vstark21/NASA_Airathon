@@ -99,6 +99,7 @@ if __name__ == '__main__':
             features_threshold=config.FEATURES_THRESHOLD,
             topk_features=config.TOPK_FEATURES
         )
+        logger.info(f"Features selected: {features}")
 
     train_features = train_df[features].to_numpy()
     test_features = test_df[features].to_numpy()
@@ -134,9 +135,15 @@ if __name__ == '__main__':
             for k, v in metrics.items():
                 logger.info(f"Average eval_{k}: {np.mean(v)}")
 
-    plt.barh(features, level0_feat_importance)
+    level0_feat_importance = [
+        [features[i], level0_feat_importance[i]] for i in range(len(features))
+    ]
+    level0_feat_importance.sort(key=lambda x: x[1])
+    level0_feat_importance = np.array(level0_feat_importance)
+    plt.barh(level0_feat_importance[:, 0], level0_feat_importance[:, 1])
     plt.yticks(fontsize='xx-small')
     plt.savefig(os.path.join(config.OUTPUT_PATH, 'l0_feature_importance.png'))
+    plt.show()
 
     logger.info(tim.beep("Level 0 training finished in "))
     
