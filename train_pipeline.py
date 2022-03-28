@@ -143,7 +143,7 @@ if __name__ == '__main__':
     plt.barh(level0_feat_importance[:, 0], level0_feat_importance[:, 1])
     plt.yticks(fontsize='xx-small')
     plt.savefig(os.path.join(config.OUTPUT_PATH, 'l0_feature_importance.png'))
-    plt.show()
+    # plt.show()
 
     logger.info(tim.beep("Level 0 training finished in "))
     

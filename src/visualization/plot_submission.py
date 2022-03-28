@@ -69,7 +69,10 @@ files = [
     # "D:/Repositories/NASA_Airathon/logs/2022-03-26-13-05/submission_2022-03-26-13-05.csv",
     # "D:/Repositories/NASA_Airathon/logs/2022-03-26-15-15/submission_2022-03-26-15-15.csv",
     "D:/Repositories/NASA_Airathon/submission/2022-03-26-17-31/submission_2022-03-26-17-31.csv",
-    "D:/Repositories/NASA_Airathon/submission/2022-03-22-03-33/submission_2022-03-22-03-33.csv",
+    # "D:/Repositories/NASA_Airathon/submission/2022-03-22-03-33/submission_2022-03-22-03-33.csv",
+    # "D:/Repositories/NASA_Airathon/logs/2022-03-28-20-18/submission_2022-03-28-20-18.csv",
+    # "D:/Repositories/NASA_Airathon/logs/2022-03-28-22-08/submission_2022-03-28-22-08.csv",
+    "D:/Repositories/NASA_Airathon/submission/2022-03-28-23-36/submission_2022-03-28-23-36.csv",
 ]
 
 scores = [
@@ -120,6 +123,8 @@ scores = [
     # "N/A",
     # "N/A",
     # 0.7413,
+    # "N/A",
+    # "N/A",
     # "N/A",
     # "N/A",
     # "N/A",

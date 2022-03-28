@@ -110,7 +110,7 @@ if __name__ == '__main__':
     # ============================== P R E D I C T I N G ============================== #
 
     # P I P E L I N E - 1
-    LOG_DIR = "logs/2022-03-26-13-05"
+    LOG_DIR = "logs/2022-03-28-20-18"
     models = [
         'xgb_tuned_None',
         'catb_tuned_None',
@@ -132,7 +132,7 @@ if __name__ == '__main__':
         pipeline_1_preds += (reg.predict(features) / 5)
     
     # P I P E L I N E - 2
-    LOG_DIR = "logs/2022-03-26-15-15"
+    LOG_DIR = "logs/2022-03-28-22-08"
     location = grid_metadata[grid_metadata['grid_id'] == config.GRID_ID]['location'].values[0]
     models = [
         f'xgb_tuned_42_{location}_42',
