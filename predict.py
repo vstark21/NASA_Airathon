@@ -182,7 +182,4 @@ if __name__ == '__main__':
     # print(f"Pipeline 1: {pipeline_1_preds}")
     # print(f"Pipeline 2: {pipeline_2_preds}")
     print(f"Final prediction: {(pipeline_1_preds + pipeline_2_preds) / 2}")
-
-
-    
     
