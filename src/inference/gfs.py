@@ -52,9 +52,10 @@ def get_boundary(geometry, res=0.25):
     return [min_long, max_long], [min_lat, max_lat]
 
 def get_gfs_data(config, grid_metadata) -> pd.DataFrame:
-    pswd = 'Stark@9360'
+    email = config.NCAR_EMAIL
+    pswd = config.NCAR_PSWD
     url = 'https://rda.ucar.edu/cgi-bin/login'
-    values = {'email' : 'chepuri.vishwas.eee19@itbhu.ac.in', 'passwd' : pswd, 'action' : 'login'}
+    values = {'email' : email, 'passwd' : pswd, 'action' : 'login'}
     # Authenticate
     ret = requests.post(url,data=values)
     if ret.status_code != 200:
@@ -98,8 +99,6 @@ def get_gfs_data(config, grid_metadata) -> pd.DataFrame:
                     if chunk_size < filesize:
                         check_file_status(file_base, filesize)
             check_file_status(file_base, filesize)
-
-                
 
         gr = pygrib.open(file_base)
         assets = {}

@@ -36,32 +36,35 @@ def get_maiac_data(config, sat_data, grid_metadata) -> pd.DataFrame:
                 features[key + '_mean'].append(np.nan)
                 features[key + '_var'].append(np.nan)
             continue
-        url = possible.iloc[0]['us_url']
-        filename = os.path.basename(url)
-        if not os.path.exists(filename):
-            os.system(f"aws s3 cp {url} ./ --no-sign-request")
-        data = rxr.open_rasterio(filename, masked=True)
-    
-        try:
-            clipped = data[0].rio.clip(geometries, crs=4326)
-        except NoDataInBounds:
+        for k in range(len(possible)):
+            if dt - possible.iloc[k]['time_end'] > datetime.timedelta(1, 0):
+                continue
+            url = possible.iloc[k]['us_url']
+            filename = os.path.basename(url)
+            if not os.path.exists(filename):
+                os.system(f"aws s3 cp {url} ./ --no-sign-request")
+            data = rxr.open_rasterio(filename, masked=True)
+        
+            try:
+                clipped = data[0].rio.clip(geometries, crs=4326)
+            except NoDataInBounds:
+                continue
+            
+            assets = {}
+            for key in config.MAIAC_BANDS:
+                assets[key] = np.array(clipped[key].as_numpy())
+            for key in config.MAIAC_BANDS:
+                _band = np.array(assets[key]).ravel()
+                _band = np.concatenate((
+                    _band[_band >= 0], _band[_band < 0]
+                )) # removing nan values
+                mean, var = _band.mean(), _band.std() ** 2
+                features[key + '_mean'].append(mean)
+                features[key + '_var'].append(var)
+            break
+        else:
             for key in config.MAIAC_BANDS:
                 features[key + '_mean'].append(np.nan)
                 features[key + '_var'].append(np.nan)
-            continue
-        
-        assets = {}
-        for key in config.MAIAC_BANDS:
-            assets[key] = np.array(clipped[key].as_numpy())
-        np.savez_compressed('temp.npz', **assets)
-        clipped = np.load('temp.npz')
-        for key in config.MAIAC_BANDS:
-            _band = np.array(clipped[key]).ravel()
-            _band = np.concatenate((
-                _band[_band >= 0], _band[_band < 0]
-            )) # removing nan values
-            mean, var = _band.mean(), _band.std() ** 2
-            features[key + '_mean'].append(mean)
-            features[key + '_var'].append(var)
 
     return pd.DataFrame(features)

@@ -1,5 +1,7 @@
 ---
-GRID_METAFILE: 'data/grid_metadata.csv'
+NCAR_EMAIL: 'chepuri.vishwas.eee19@itbhu.ac.in'
+NCAR_PSWD: ''
+GRID_METAFILE: 'data/proc/grid_nasadem.csv'
 MAIAC_BANDS: ['Optical_Depth_047', 'Optical_Depth_055', 'AOD_Uncertainty', 'Column_WV', 'AOD_QA', 'AOD_MODEL', 'Injection_Height']
 MISR_BANDS: ['Latitude', 'Longitude', 'Aerosol_Optical_Depth', 
   'Aerosol_Optical_Depth_Uncertainty', 'Angstrom_Exponent_550_860nm', 

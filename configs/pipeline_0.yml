@@ -25,7 +25,7 @@ DATA_PRODUCTS:
 
 TRAIN_METAFILE: 'data/train_labels.csv'
 TEST_METAFILE: 'data/submission_0.csv'
-GRID_METAFILE: 'data/grid_metadata.csv'
+GRID_METAFILE: 'data/proc/grid_nasadem.csv'
 
 N_FOLDS: 5
 
