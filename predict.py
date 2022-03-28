@@ -1,17 +1,7 @@
 # General imports
-from email.policy import default
-import os
-import sys
-import cv2
-import time
-import glob
-import json
 import yaml
-import scipy
 import pickle
-import random
 import warnings
-import requests
 warnings.filterwarnings('ignore')
 import datetime
 import argparse
@@ -21,25 +11,13 @@ import seaborn as sns
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 from collections import defaultdict
-import netCDF4
-import rioxarray as rxr
-import pygrib
-from rioxarray.exceptions import NoDataInBounds
-
-from src.data import prepare_dataset
-from src.models import run_kfold
-from xgboost import XGBRegressor
-from catboost import CatBoostRegressor
-from lightgbm import LGBMRegressor
 
 from src.inference import (
-    get_maiac_data, get_misr_data, get_gfs_data)
+    get_maiac_data, get_misr_data, get_gfs_data
+)
 
 from src.utils import *
 from loguru import logger
-from typing import Tuple
-
-TIMESTAMP = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M")
 
 # Arguments
 parser = argparse.ArgumentParser()
@@ -52,7 +30,6 @@ parser.add_argument(
 parser.add_argument(
     '--satdata_file', dest='satdata_file', type=str, help='Path to the satellite data file', default="data/pm25_satellite_metadata.csv")
 
-# Answer for default argument must be 79.3302822672939
 args = parser.parse_args()
 
 def load_temporal_features(features):
