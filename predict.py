@@ -29,7 +29,10 @@ parser.add_argument(
     '--grid_id', dest='grid_id', type=str, help='Grid ID', default="C7PGV")
 parser.add_argument(
     '--satdata_file', dest='satdata_file', type=str, help='Path to the satellite data file', default="data/pm25_satellite_metadata.csv")
-
+parser.add_argument(
+    '--ncar_email', dest='ncar_email', type=str, help='Email address to login to NCAR website to download GFS data', required=True)
+parser.add_argument(
+    '--ncar_pswd', dest='ncar_pswd', type=str, help='Password to login to NCAR website to download GFS data', required=True)
 args = parser.parse_args()
 
 def load_temporal_features(features):
@@ -66,6 +69,8 @@ if __name__ == '__main__':
     config.OBS_START_TIME = datetime.datetime.strptime(args.obs_start_time, '%Y-%m-%dT%H:%M:%SZ')
     config.GRID_ID = args.grid_id
     config.SATELLITE_FILE = args.satdata_file
+    config.NCAR_EMAIL = args.ncar_email
+    config.NCAR_PSWD = args.ncar_pswd
     # logger.info(f"Config:{str(config)}")
     # logger.info(f"Observation start time: {config.OBS_START_TIME}")
     # logger.info(f"Grid ID: {config.GRID_ID}")
