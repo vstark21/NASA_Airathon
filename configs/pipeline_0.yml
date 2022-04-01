@@ -39,7 +39,7 @@ FS_SEEDS: [42]
 # MODELS: ['xgb_tuned', 'catb_tuned', 'lgbm_tuned']
 MODELS: ['xgb_tuned', 'catb_tuned', 'lgbm_tuned']
 # SEEDS: [42, 2022, 1680, null]
-SEEDS: [42]
+SEEDS: [null]
 
 BLENDER: 'linreg'
 BLENDER_SEED: 42

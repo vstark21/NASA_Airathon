@@ -3,8 +3,8 @@ OUTPUT_PATH: 'logs/'
 
 DATA_PRODUCTS:
   maiac:
-    train_file: 'data/proc/train_maiac.csv'
-    test_file: 'data/proc/test_maiac.csv'
+    train_file: 'data/proc/temp_train_maiac.csv'
+    test_file: 'data/proc/temp_test_maiac.csv'
     drop: [
       'FineModeFraction_mean', 'FineModeFraction_var'
     ]
@@ -25,7 +25,7 @@ DATA_PRODUCTS:
 
 TRAIN_METAFILE: 'data/train_labels.csv'
 TEST_METAFILE: 'data/submission_0.csv'
-GRID_METAFILE: 'data/grid_metadata.csv'
+GRID_METAFILE: 'data/proc/grid_nasadem.csv'
 
 N_FOLDS: 5
 
@@ -36,23 +36,24 @@ FS_SAMPLE_PERCENTAGE: 0.5
 FS_MODELS: ['xgb_tuned', 'lgbm_tuned']
 FS_SEEDS: [42]
 
-MODELS: ['lgbm_tuned']
+# MODELS: ['xgb_tuned', 'catb_tuned', 'lgbm_tuned']
+MODELS: ['xgb_tuned', 'catb_tuned', 'lgbm_tuned']
 # SEEDS: [42, 2022, 1680, null]
-SEEDS: [null]
+SEEDS: [42]
 
 BLENDER: 'linreg'
 BLENDER_SEED: 42
 
 XGB_PARAMS:
-  learning_rate: 0.0034442003147028494
-  n_estimators: 3900
-  reg_lambda: 1
-  reg_alpha: 76
-  subsample: 0.9000000000000001
-  colsample_bytree: 0.5
+  learning_rate: 0.008413060157425385
+  n_estimators: 2600
+  reg_lambda: 19
+  reg_alpha: 75
+  subsample: 0.5
+  colsample_bytree: 0.4
   max_depth: 5
   min_child_weight: 6
-  gamma: 8.152339086077951
+  gamma: 0.2635842876184764
 
 CATB_PARAMS:
   bootstrap_type: 'Bernoulli'
@@ -69,13 +70,13 @@ CATB_PARAMS:
 
 LGBM_PARAMS:
   metric: 'rmse'
-  n_estimators: 7993
-  reg_alpha: 0.0015505044829857578
-  reg_lambda: 0.003735576207627436
-  colsample_bytree: 0.6
-  subsample: 0.4
+  n_estimators: 6257
+  reg_alpha: 0.818684600659729
+  reg_lambda: 0.8979257130736423
+  colsample_bytree: 0.7
+  subsample: 0.7
   learning_rate: 0.006
-  max_depth: 10
-  num_leaves: 15
-  min_child_samples: 254
-  cat_smooth: 34
+  max_depth: 2
+  num_leaves: 26 
+  min_child_samples: 19
+  cat_smooth: 16
