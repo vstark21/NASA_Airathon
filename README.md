@@ -4,9 +4,55 @@ Username: [vstark21](https://www.drivendata.org/users/vstark21/)
 
 ## Summary
 
-* Firstly for each data product, for each instance in train data and test data, we select the latest satellite file whose `satellite_time_end < observation_time_end` and then for each band in the file, we select pixels whose global coordinates lies in given grid cell polygon. 
+* Firstly, for each data product, for each instance in train data and test data, we select the latest satellite file whose `satellite_time_end < observation_time_end` and then for each band in the file, we select pixels whose global coordinates lies in given grid cell polygon. 
   
   ![dp](assets/dp.png)
+
+* After collecting the features from all the data products (maiac, misr, gfs, nasadem) in the above mentioned way, we might find `nan` values in some feature columns in the dataframe. We perform *grid wise mean imputation*.
+  
+  ```python
+  # Following code shows grid wise mean imputation
+  # Here train_df, test_df contains collected features using above method
+  # from all data products
+  # train_metadata: train_labels.csv file
+  
+  feat_columns = [col for col in train_df.columns if col != 'grid_id']
+  for grid_id in train_metadata['grid_id'].unique():
+      for col in feat_columns:
+          indices = train_df[train_df['grid_id'] == grid_id].index
+          mean_val = train_df.loc[indices, col].mean()
+          train_df.loc[indices, col] = train_df.loc[indices, col].fillna(mean_val)
+          
+          indices = test_df[test_df['grid_id'] == grid_id].index
+          test_df.loc[indices, col] = test_df.loc[indices, col].fillna(mean_val)
+  ```
+
+* After performing imputation, we now create grid wise temporal diference features in the following way.
+  
+  ```python
+  # Let's say today and yesterday contains features for predicting today's 
+  # yesterday's concentration respectively. 
+  # NOTE: today and yesterday must belong to same grid cell
+  
+  for col in feat_columns:
+      today[col + '_temporal_diff'] = today[col] - yesterday[col]
+  ```
+
+* And then we create features from metadata which includes location, month, day and grid wise mean value.
+  
+  ```python
+  # Grid wise mean value is calculated in following way
+  # train_metadata: train_labels.csv file
+  # test_metadata: submission_format.csv file
+  train_df['mean_value'] = train_metadata['grid_id'].apply(
+      lambda x: train_metadata[train_metadata['grid_id'] == x]['value'].mean()
+  )
+  test_df['mean_value'] = test_metadata['grid_id'].apply(
+      lambda x: train_metadata[train_metadata['grid_id'] == x]['value'].mean()
+  )
+  ```
+
+
 
 ## Repo structure
 
