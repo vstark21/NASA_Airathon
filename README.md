@@ -2,6 +2,12 @@
 
 Username: [vstark21](https://www.drivendata.org/users/vstark21/)
 
+## Summary
+
+* Firstly for each data product, for each instance in train data and test data, we select the latest satellite file whose `satellite_time_end < observation_time_end` and then for each band in the file, we select pixels whose global coordinates lies in given grid cell polygon. 
+  
+  ![dp](assets/dp.png)
+
 ## Repo structure
 
 ```bash
@@ -56,7 +62,7 @@ unzip models.zip
 
 ```
 CPU: Intel(R) Core(TM) i5-8265U CPU @ 1.60GHz (8 CPUs)
-GPU: No gpu's were used in training
+GPU: No gpus were used in training
 Memory: 8GB
 OS: Windows 11 Home Single Language 64-bit
 Train Duration: 26 mins (without including data pre-processing)
