@@ -4,7 +4,7 @@ Username: [vstark21](https://www.drivendata.org/users/vstark21/)
 
 ## Summary
 
-* Firstly, for each data product, for each instance in train data and test data, we select the latest satellite file whose `satellite_time_end < observation_time_end` and then for each band in the file, we select pixels whose global coordinates lies in given grid cell polygon. 
+* Firstly, for each data product, for each instance in train data and test data, we select the latest satellite file whose `satellite_time_end < observation_time_end` and then for each band in the file, we select pixels whose global coordinates lies in given grid cell polygon. You can find preprocessing notebooks for each data product in `notebooks/` directory.
   
   ![dp](assets/dp.png)
 
@@ -52,7 +52,9 @@ Username: [vstark21](https://www.drivendata.org/users/vstark21/)
   )
   ```
 
-
+* After feature engineering we train entire pipeline.
+  
+  ![md](assets/md.png)
 
 ## Repo structure
 
