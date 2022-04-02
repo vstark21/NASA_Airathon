@@ -42,7 +42,7 @@ def get_maiac_data(config, sat_data, grid_metadata) -> pd.DataFrame:
             url = possible.iloc[k]['us_url']
             filename = os.path.basename(url)
             if not os.path.exists(filename):
-                os.system(f"aws s3 cp {url} ./ --no-sign-request")
+                os.system(f"aws s3 cp {url} ./ --no-sign-request --no_progress")
             data = rxr.open_rasterio(filename, masked=True)
         
             try:

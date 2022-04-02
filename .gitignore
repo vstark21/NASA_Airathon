@@ -151,3 +151,4 @@ data/backup/*
 *.nc
 *.grib2
 *.excalidraw
+reports/

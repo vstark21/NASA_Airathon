@@ -22,7 +22,7 @@ Username: [vstark21](https://www.drivendata.org/users/vstark21/)
           indices = train_df[train_df['grid_id'] == grid_id].index
           mean_val = train_df.loc[indices, col].mean()
           train_df.loc[indices, col] = train_df.loc[indices, col].fillna(mean_val)
-          
+  
           indices = test_df[test_df['grid_id'] == grid_id].index
           test_df.loc[indices, col] = test_df.loc[indices, col].fillna(mean_val)
   ```
@@ -113,7 +113,7 @@ CPU: Intel(R) Core(TM) i5-8265U CPU @ 1.60GHz (8 CPUs)
 GPU: No gpus were used in training
 Memory: 8GB
 OS: Windows 11 Home Single Language 64-bit
-Train Duration: 26 mins (without including data pre-processing)
+Train Duration: 26 mins (without including data downloading and pre-processing)
 Inference Duration: Around 30 mins to predict one day’s concentrations for all the grids in three cities (Including data downloading and pre-processing)
 ```
 
