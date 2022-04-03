@@ -90,12 +90,6 @@ if __name__ == '__main__':
     gfs_data = get_gfs_data(config, grid_metadata)
     gfs_data.columns = map(lambda x: f"gfs_{x}", gfs_data.columns)
 
-    # test_df = pd.read_csv('tmptest_features.csv')
-    # for col in gfs_data.columns:
-    #     print(f"{col}: {gfs_data[col].values[1]} {test_df.iloc[8860-2][col]}")
-    #     print(f"{col}: {gfs_data[col].values[0]} {test_df.iloc[8811-2][col]}")
-    # quit()
-
     df = pd.concat([maiac_data, misr_data, gfs_data], axis=1)
 
     # ============================== P R E P A R I N G  D A T A ============================== #
@@ -165,5 +159,5 @@ if __name__ == '__main__':
     pipeline_2_preds = pipeline_2_preds.squeeze()
     # print(f"Pipeline 1: {pipeline_1_preds}")
     # print(f"Pipeline 2: {pipeline_2_preds}")
-    print(f"Final prediction: {(pipeline_1_preds + pipeline_2_preds) / 2}")
+    print(f"\nFinal prediction: {(pipeline_1_preds + pipeline_2_preds) / 2}")
     

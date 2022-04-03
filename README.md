@@ -1,8 +1,8 @@
 # NASA Airathon
 
-Username: [vstark21](https://www.drivendata.org/users/vstark21/)
+**Username:** [vstark21](https://www.drivendata.org/users/vstark21/)
 
-Data sources used: MAIAC, MISR, GFS, NASADEM
+**Data sources used:** MAIAC, MISR, GFS, NASADEM
 
 ## Summary
 
@@ -62,7 +62,7 @@ Data sources used: MAIAC, MISR, GFS, NASADEM
 
 ##### Modeling
 
-* After feature engineering, we train each model of the architecture shown below. Entire architecture consists of 14 models each of which is a self-ensemble of 5-folds.
+* After feature engineering, we train each model of the architecture shown below. Entire architecture consists of 14 models each of which is a self-ensemble of 5-folds. All the model parameters were tuned using Optuna.
   
   ![md](assets/md.png)
 
@@ -92,7 +92,8 @@ Data sources used: MAIAC, MISR, GFS, NASADEM
     ├── inference             # Contains data downloading functions for inference
     ├── visualization         # Contains visualization functions
     └── utils                 # Contains utility functions
-├── requirements.txt
+├── create_submission.py      # Runs inference on entire test data and creates submission
+├── requirements.txt          # Contains all dependencies required except rasterio
 ├── predict.py                # Contains inference code for a single data point
 ├── train.py                  # Contains single model training code
 ├── train_locwise.py          # Contains location wise single model training code
@@ -102,7 +103,7 @@ Data sources used: MAIAC, MISR, GFS, NASADEM
 
 ## Setup
 
-Execute the following commands to create a conda environment *nasa_env* and then install all the dependencies.
+Download and install [anaconda](https://docs.anaconda.com/anaconda/install/index.html) or [miniconda](https://docs.anaconda.com/anaconda/install/index.html). Execute the following commands to create a conda environment *nasa_env* and then install all the dependencies.
 
 ```bash
 conda create -n nasa_env python==3.9
