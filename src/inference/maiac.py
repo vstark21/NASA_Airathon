@@ -42,7 +42,7 @@ def get_maiac_data(config, sat_data, grid_metadata) -> pd.DataFrame:
             url = possible.iloc[k]['us_url']
             filename = os.path.basename(url)
             if not os.path.exists(filename):
-                os.system(f"aws s3 cp {url} ./ --no-sign-request --no_progress")
+                os.system(f"aws s3 cp {url} ./ --no-sign-request --no-progress")
             data = rxr.open_rasterio(filename, masked=True)
         
             try:
@@ -63,6 +63,7 @@ def get_maiac_data(config, sat_data, grid_metadata) -> pd.DataFrame:
                 features[key + '_var'].append(var)
             break
         else:
+            print(f"No MAIAC data found within 24 hours prior to given datetime. Using NaNs instead.")
             for key in config.MAIAC_BANDS:
                 features[key + '_mean'].append(np.nan)
                 features[key + '_var'].append(np.nan)

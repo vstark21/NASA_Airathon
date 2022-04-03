@@ -94,5 +94,5 @@ if __name__ == '__main__':
 
     sub_df['value'] = (pipeline_1_preds + pipeline_2_preds) / 2
     sub_df.drop(columns=['location'], inplace=True)
-    sub_df.to_csv('submission.csv', index=False)
+    sub_df.to_csv('data/proc/submission.csv', index=False)
     

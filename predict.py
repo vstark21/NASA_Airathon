@@ -24,11 +24,11 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     '--config', dest='config', type=str, help='Path to the config file', default='configs/predict.yml')
 parser.add_argument(
-    '--observation_start_time', dest='obs_start_time', type=str, help='Observation start time in format: %Y-%m-%dT%H:%M:%SZ', default="2021-03-02T18:30:00Z")
+    '--observation_start_time', dest='obs_start_time', type=str, help="Observation start time in YYYY-MM-DDTHH:mm:ssZ format", default="2021-03-02T18:30:00Z")
 parser.add_argument(
     '--grid_id', dest='grid_id', type=str, help='Grid ID', default="C7PGV")
 parser.add_argument(
-    '--satdata_file', dest='satdata_file', type=str, help='Path to the satellite data file', default="data/pm25_satellite_metadata.csv")
+    '--satdata_file', dest='satdata_file', type=str, help='Path to the satellite data file which contains maiac and misr satellite data information', default="data/pm25_satellite_metadata.csv")
 parser.add_argument(
     '--ncar_email', dest='ncar_email', type=str, help='Email address to login to NCAR website to download GFS data', required=True)
 parser.add_argument(
@@ -115,7 +115,8 @@ if __name__ == '__main__':
     # ============================== P R E D I C T I N G ============================== #
 
     # P I P E L I N E - 1
-    LOG_DIR = "logs/2022-03-28-20-18"
+    LOG_DIR = "models/pipe_1"
+    assert os.path.exists(LOG_DIR), f"{LOG_DIR} does not exist, please make sure you downloaded the weights."
     models = [
         'xgb_tuned_None',
         'catb_tuned_None',
@@ -137,7 +138,8 @@ if __name__ == '__main__':
         pipeline_1_preds += (reg.predict(features) / 5)
     
     # P I P E L I N E - 2
-    LOG_DIR = "logs/2022-03-28-22-08"
+    LOG_DIR = "models/pipe_2"
+    assert os.path.exists(LOG_DIR), f"{LOG_DIR} does not exist, please make sure you downloaded the weights."
     location = grid_metadata[grid_metadata['grid_id'] == config.GRID_ID]['location'].values[0]
     models = [
         f'xgb_tuned_42_{location}_42',

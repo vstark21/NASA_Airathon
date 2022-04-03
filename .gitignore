@@ -152,3 +152,4 @@ data/backup/*
 *.grib2
 *.excalidraw
 reports/
+models/
