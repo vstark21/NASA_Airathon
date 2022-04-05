@@ -15,3 +15,4 @@ awscli
 scipy
 netCDF4==1.5.8
 rioxarray
+requests	

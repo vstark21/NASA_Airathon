@@ -108,8 +108,9 @@ Download and install [anaconda](https://docs.anaconda.com/anaconda/install/index
 ```bash
 conda create -n nasa_env python==3.9
 conda activate nasa_env
-pip install -r requirement.txt
 conda install -c conda-forge rasterio
+conda install -c conda-forge pygrib
+pip install -r requirements.txt
 ```
 
 And download the trained weights from [here](https://drive.google.com/file/d/1K7331_L2tk7EzdXBArgN9cLNvlMnpFV9) and unzip it. Or execute the following commands to download and unzip the trained weights. 
