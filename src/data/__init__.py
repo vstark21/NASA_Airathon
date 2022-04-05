@@ -272,9 +272,12 @@ def prepare_dataset(
     train_df, test_df = _impute(train_df, test_df, train_metadata, test_metadata)
     train_df, test_df = _load_temporal_features(train_df, test_df, grid_data, train_metadata, test_metadata)
 
-    train_metadata['mean_value'] = train_metadata.groupby('grid_id')['value'].transform('mean')
-    train_df['mean_value'] = train_metadata['mean_value'].values
-    test_df['mean_value'] = test_metadata['value'].values
+    train_df['mean_value'] = train_metadata['grid_id'].apply(
+    lambda x: train_metadata[train_metadata['grid_id'] == x]['value'].mean()
+    )
+    test_df['mean_value'] = test_metadata['grid_id'].apply(
+        lambda x: train_metadata[train_metadata['grid_id'] == x]['value'].mean()
+    )
 
     train_df, test_df = _load_metadata(train_df, test_df, grid_data, train_metadata, test_metadata)
     train_df = train_df.drop(columns=['grid_id'])

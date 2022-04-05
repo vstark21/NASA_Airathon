@@ -3,8 +3,8 @@ OUTPUT_PATH: 'logs/'
 
 DATA_PRODUCTS:
   maiac:
-    train_file: 'data/proc/temp_train_maiac.csv'
-    test_file: 'data/proc/temp_test_maiac.csv'
+    train_file: 'data/proc/train_maiac.csv'
+    test_file: 'data/proc/test_maiac.csv'
     drop: [
       'FineModeFraction_mean', 'FineModeFraction_var'
     ]
@@ -24,7 +24,7 @@ DATA_PRODUCTS:
     drop: ['latitude_mean', 'latitude_var', 'longitude_mean', 'longitude_var']
 
 TRAIN_METAFILE: 'data/train_labels.csv'
-TEST_METAFILE: 'data/submission_0.csv'
+TEST_METAFILE: 'data/submission_format.csv'
 GRID_METAFILE: 'data/proc/grid_nasadem.csv'
 
 N_FOLDS: 5
