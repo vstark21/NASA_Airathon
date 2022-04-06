@@ -8,7 +8,7 @@
 
 ##### Processing data
 
-* Firstly, for each data product, for each instance in train data and test data, we select the latest satellite file whose `satellite_time_end < observation_time_end` and then for each band in the file, we select pixels whose global coordinates lies in given grid cell polygon. The processed features for each data product are stored in `.csv` format in `data/proc` directory. You can find preprocessing notebooks for each data product in `notebooks/` directory. 
+* Firstly, for each data product, for each instance in train data and test data, we select the latest satellite file whose `satellite_time_end < observation_time_end` and then for each band in the file, we select pixels whose global coordinates lies in given grid cell polygon and take their mean and variance as features. The processed features for each data product are stored in `.csv` format in `data/proc` directory. You can find preprocessing notebooks for each data product in `notebooks/` directory. 
   
   ![dp](assets/dp.png)
 
@@ -35,7 +35,7 @@
 
 ##### Feature Engineering
 
-* After performing imputation, we now create grid wise temporal diference features in the following way.
+* After performing imputation, we now create grid wise temporal difference features in the following way.
   
   ```python
   # Let's say today and yesterday contains features for predicting today's 
@@ -62,7 +62,7 @@
 
 ##### Modeling
 
-* After feature engineering, we train each model of the architecture shown below. Entire architecture consists of 14 models each of which is a self-ensemble of 5-folds. All the model parameters were tuned using Optuna.
+* After feature engineering, we train each model of the architecture shown below. Entire architecture consists of 14 models each of which is a self-ensemble of 5-folds. All the model hyperparameters were tuned using Optuna.
   
   ![md](assets/md.png)
 
@@ -154,7 +154,7 @@ $ python train_locwise_pipeline.py --config configs/pipeline_1.yml
 
 ```
 $ python predict.py --help
-usage: prdict.py [-h] [--config CONFIG] [--observation_start_time OBS_START_TIME] [--grid_id GRID_ID]
+usage: predict.py [-h] [--config CONFIG] [--observation_start_time OBS_START_TIME] [--grid_id GRID_ID]
                   [--satdata_file SATDATA_FILE] --ncar_email NCAR_EMAIL --ncar_pswd NCAR_PSWD
 
 optional arguments:
