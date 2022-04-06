@@ -45,7 +45,7 @@ if __name__ == '__main__':
 
     # ============================== P R E D I C T I N G ============================== #
     # P I P E L I N E - 1
-    LOG_DIR = "logs/2022-03-28-20-18"
+    LOG_DIR = "models/pipe_1"
     models = [
         'xgb_tuned_None',
         'catb_tuned_None',
@@ -67,7 +67,7 @@ if __name__ == '__main__':
         pipeline_1_preds += (reg.predict(features) / 5)
     
     # P I P E L I N E - 2
-    LOG_DIR = "logs/2022-03-28-22-08"
+    LOG_DIR = "models/pipe_2"
     features = defaultdict(lambda: np.zeros(len(df)))
     models = [
         f'xgb_tuned_42',

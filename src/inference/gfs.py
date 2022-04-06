@@ -59,7 +59,7 @@ def get_gfs_data(config, grid_metadata) -> pd.DataFrame:
     # Authenticate
     ret = requests.post(url,data=values)
     if ret.status_code != 200:
-        print('Bad Authentication')
+        print('Bad Authentication for NCAR')
         print(ret.text)
         exit(1)
     DSPATH = 'https://rda.ucar.edu/data/ds084.1/'

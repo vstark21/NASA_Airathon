@@ -109,7 +109,7 @@ if __name__ == '__main__':
     # ============================== P R E D I C T I N G ============================== #
 
     # P I P E L I N E - 1
-    LOG_DIR = "models/pipe_1"
+    LOG_DIR = config.PIPE1_DIR
     assert os.path.exists(LOG_DIR), f"{LOG_DIR} does not exist, please make sure you downloaded the weights."
     models = [
         'xgb_tuned_None',
@@ -132,7 +132,7 @@ if __name__ == '__main__':
         pipeline_1_preds += (reg.predict(features) / 5)
     
     # P I P E L I N E - 2
-    LOG_DIR = "models/pipe_2"
+    LOG_DIR = config.PIPE2_DIR
     assert os.path.exists(LOG_DIR), f"{LOG_DIR} does not exist, please make sure you downloaded the weights."
     location = grid_metadata[grid_metadata['grid_id'] == config.GRID_ID]['location'].values[0]
     models = [

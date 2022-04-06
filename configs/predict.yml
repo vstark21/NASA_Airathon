@@ -3495,3 +3495,6 @@ LOCATION_ENCODING:
   'Taipei': 0
   'Delhi': 1
   'Los Angeles (SoCAB)': 2
+
+PIPE1_DIR: 'models/pipe_1'
+PIPE2_DIR: 'models/pipe_2'
